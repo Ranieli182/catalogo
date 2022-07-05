@@ -1,4 +1,4 @@
-#Fri Jul 01 17:11:02 BRT 2022
+#Tue Jul 05 16:52:14 BRT 2022
 base.0=D\:\\McProjetos\\android_studio\\catalogo\\build\\app\\intermediates\\dex\\debug\\mergeDexDebug\\classes.dex
 renamed.0=classes.dex
 path.0=classes.dex
