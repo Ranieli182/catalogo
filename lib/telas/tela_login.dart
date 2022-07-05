@@ -43,7 +43,15 @@ class _TelaLoginState extends State<TelaLogin> {
         encoding: Encoding.getByName('utf-8'),
         body: funcao);
 
-    if (response.statusCode == 200) {
+    String resposta = '';
+    resposta = response.body.toString();
+
+    if (resposta.contains("cn")) {
+      //Util.savePreferences("user", editusuario.getText().toString(), TelaLogin.this);
+      // Util.savePreferences("password", editSenha.getText().toString(), TelaLogin.this);
+      setState(() {
+        _usuarioNaoCadastrado = "";
+      });
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => TelaPrincipal()),
       );
