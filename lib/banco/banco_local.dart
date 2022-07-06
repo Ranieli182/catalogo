@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 
 final String tblUsuario = "tblUsuario";
 final String idUsuario = "idUsuario";
-final String nomeUsuario = "nomeUsuario";
+final String userUsuario = "userUsuario";
 final String senhaUsuario = "senhaUsuario";
 
 
@@ -33,21 +33,21 @@ class UsuarioHelper {
 
     return await openDatabase(path, version: 1, onCreate: (Database db, int newerVersion) async {
       await db.execute(
-          "CREATE TABLE $tblUsuario($idUsuario INTEGER PRIMARY KEY, $nomeUsuario TEXT, $senhaUsuario TEXT)"
+          "CREATE TABLE $tblUsuario($idUsuario INTEGER PRIMARY KEY, $userUsuario TEXT, $senhaUsuario TEXT)"
       );
     });
   }
 
-  Future<Usuario> saveContact(Usuario usuario) async {
+  Future<Usuario> saveUsuario(Usuario usuario) async {
     Database dbUsuario = await db;
-    usuario.id = await dbUsuario.insert(tblUsuario, usuario.toMap());
+    usuario.id = (await dbUsuario.insert(tblUsuario, usuario.toMap()));
     return usuario;
   }
 
-  Future<Usuario> getContact(int id) async {
+  Future<Usuario> getUsuario(int id) async {
     Database dbUsuario = await db;
     List<Map> maps = await dbUsuario.query(tblUsuario,
-        columns: [idUsuario, nomeUsuario, senhaUsuario],
+        columns: [idUsuario, userUsuario, senhaUsuario],
         where: "$idUsuario = ?",
         whereArgs: [id]);
     if(maps.length > 0){
@@ -57,12 +57,12 @@ class UsuarioHelper {
     }
   }
 
-  Future<int> deleteContact(int id) async {
+  Future<int> deleteUsuario(int id) async {
     Database dbUsuario = await db;
     return await dbUsuario.delete(tblUsuario, where: "$idUsuario = ?", whereArgs: [id]);
   }
 
-  Future<int> updateContact(Usuario usuario) async {
+  Future<int> updateUsuario(Usuario usuario) async {
     Database dbUsuario = await db;
     return await dbUsuario.update(tblUsuario,
         usuario.toMap(),
@@ -70,10 +70,10 @@ class UsuarioHelper {
         whereArgs: [usuario.id]);
   }
 
-  Future<List> getAllContacts() async {
+  Future<List> getAllUsuarios() async {
     Database dbUsuario = await db;
     List listMap = await dbUsuario.rawQuery("SELECT * FROM $tblUsuario");
-    List<Usuario> listaUsuario = List();
+    List<Usuario> listaUsuario = [];
     for(Map m in listMap){
       listaUsuario.add(Usuario.fromMap(m));
     }
@@ -95,20 +95,20 @@ class UsuarioHelper {
 class Usuario {
 
   int id;
-  String nome;
+  String user;
   String senha;
 
   Usuario();
 
   Usuario.fromMap(Map map){
     id = map[idUsuario];
-    nome = map[nomeUsuario];
+    user = map[userUsuario];
     senha = map[senhaUsuario];
   }
 
   Map toMap() {
     Map<String, dynamic> map = {
-      nomeUsuario: nome,
+      userUsuario: user,
       senhaUsuario: senha,
     };
     if(id != null){
@@ -119,7 +119,7 @@ class Usuario {
 
   @override
   String toString() {
-    return "Usuario(id: $id, nome: $nome, senha: $senha)";
+    return "Usuario(id: $id, user: $user, senha: $senha)";
   }
 
 }

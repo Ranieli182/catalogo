@@ -6,8 +6,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+
 var url = Uri.parse('https://webmc.com.br/ws/mobile/');
 //var url = Uri.parse('http://192.168.1.120:8009/ws/mobile/');
+
 
 class TelaLogin extends StatefulWidget {
   final Usuario usuario;
@@ -19,23 +21,46 @@ class TelaLogin extends StatefulWidget {
 }
 
 class _TelaLoginState extends State<TelaLogin> {
+
   bool _isCheckedOffline = false;
   bool _isCheckedSalvarLogin = false;
   bool _showPassword = false;
   String _usuarioNaoCadastrado = '';
+
   final _formKey = GlobalKey<FormState>();
+
   TextEditingController _idController = TextEditingController();
   TextEditingController _senhaController = TextEditingController();
+
+  Usuario _saveUsuario;
+
+  UsuarioHelper helper = UsuarioHelper();
+
+  List<Usuario> usuario = [];
+
+
+  @override
+  void initState() {
+    super.initState();
+
+    if(widget.usuario == null){
+      _saveUsuario = Usuario();
+    } else {
+      _saveUsuario = Usuario.fromMap(widget.usuario.toMap());
+      _idController.text = _saveUsuario.user;
+      _senhaController.text = _saveUsuario.senha;
+    }
+  }
+
 
   _login() async {
     Codec<String, String> stringToBase64 = utf8.fuse(base64);
     String senhabase64 = stringToBase64.encode(_senhaController.text);
 
     String funcao = "funcao=consulta_usuario" +
-        "&usuario=" +
-        _idController.text +
-        "&senha=" +
-        senhabase64;
+        "&usuario=" + _idController.text +
+        "&senha=" + senhabase64;
+
     final response = await http.post(url,
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -49,6 +74,11 @@ class _TelaLoginState extends State<TelaLogin> {
     if (resposta.contains("cn")) {
       //Util.savePreferences("user", editusuario.getText().toString(), TelaLogin.this);
       // Util.savePreferences("password", editSenha.getText().toString(), TelaLogin.this);
+      if(_isCheckedSalvarLogin = true){
+        _saveUsuario.user = _idController.text;
+        _saveUsuario.senha = _senhaController.text;
+      }
+
       setState(() {
         _usuarioNaoCadastrado = "";
       });
@@ -62,6 +92,7 @@ class _TelaLoginState extends State<TelaLogin> {
 
     }
   }
+
 
   Color getColor(Set<MaterialState> states) {
     const Set<MaterialState> interactiveStates = <MaterialState>{
@@ -213,7 +244,7 @@ class _TelaLoginState extends State<TelaLogin> {
                       },
                     ),
                     Text(
-                      "Salvar Dados",
+                      "Salvar Login",
                       style: TextStyle(
                         color: Colors.white,
                       ),
@@ -264,3 +295,5 @@ class _TelaLoginState extends State<TelaLogin> {
     );
   }
 }
+
+
