@@ -7,100 +7,122 @@ final String idUsuario = "idUsuario";
 final String userUsuario = "userUsuario";
 final String senhaUsuario = "senhaUsuario";
 
-
 class UsuarioHelper {
-
-  static final UsuarioHelper _instance = UsuarioHelper.internal();
+  static final UsuarioHelper _instance = UsuarioHelper.interno();
 
   factory UsuarioHelper() => _instance;
 
-  UsuarioHelper.internal();
+  UsuarioHelper.interno();
 
-  Database _db;
+  Database _banco;
 
-  Future<Database> get db async {
-    if(_db != null){
-      return _db;
+  Future<Database> get banco async {
+    if (_banco != null) {
+      return _banco;
     } else {
-      _db = await initDb();
-      return _db;
+      _banco = await iniciarBanco();
+      return _banco;
     }
   }
 
-  Future<Database> initDb() async {
+  Future<Database> iniciarBanco() async {
     final databasesPath = await getDatabasesPath();
-    final path = join(databasesPath, "usuarionew.db");
+    final path = join(databasesPath, "novousuario.banco");
 
-    return await openDatabase(path, version: 1, onCreate: (Database db, int newerVersion) async {
-      await db.execute(
-          "CREATE TABLE $tblUsuario($idUsuario INTEGER PRIMARY KEY, $userUsuario TEXT, $senhaUsuario TEXT)"
-      );
+    return await openDatabase(path, version: 1,
+        onCreate: (Database banco, int newerVersion) async {
+      await banco.execute(
+          "CREATE TABLE $tblUsuario($idUsuario INTEGER PRIMARY KEY, $userUsuario TEXT, $senhaUsuario TEXT)");
     });
   }
 
-  Future<Usuario> saveUsuario(Usuario usuario) async {
-    Database dbUsuario = await db;
-    usuario.id = (await dbUsuario.insert(tblUsuario, usuario.toMap()));
-    return usuario;
+  Future<UsuarioClasse> salvarUsuario(UsuarioClasse usuario) async {
+    try {
+      Database dbUsuario = await banco;
+      usuario.id = (await dbUsuario.insert(tblUsuario, usuario.toMap()));
+      return usuario;
+    } on Exception catch (e) {
+      print(e);
+      return null;
+    }
   }
 
-  Future<Usuario> getUsuario(int id) async {
-    Database dbUsuario = await db;
-    List<Map> maps = await dbUsuario.query(tblUsuario,
-        columns: [idUsuario, userUsuario, senhaUsuario],
-        where: "$idUsuario = ?",
-        whereArgs: [id]);
-    if(maps.length > 0){
-      return Usuario.fromMap(maps.first);
+  Future<UsuarioClasse> consultarUsuario(String user) async {
+    Database dbUsuario = await banco;
+    List<Map> retorno = await dbUsuario.query(tblUsuario,
+        columns: [userUsuario, senhaUsuario],
+        where: "$userUsuario = ?",
+        whereArgs: [user]);
+    if (retorno.isNotEmpty) {
+      return UsuarioClasse.fromMap(retorno.first);
     } else {
       return null;
     }
   }
 
-  Future<int> deleteUsuario(int id) async {
-    Database dbUsuario = await db;
-    return await dbUsuario.delete(tblUsuario, where: "$idUsuario = ?", whereArgs: [id]);
+  Future<int> removerUsuario(int id) async {
+    Database dbUsuario = await banco;
+    return await dbUsuario
+        .delete(tblUsuario, where: "$idUsuario = ?", whereArgs: [id]);
   }
 
-  Future<int> updateUsuario(Usuario usuario) async {
-    Database dbUsuario = await db;
-    return await dbUsuario.update(tblUsuario,
-        usuario.toMap(),
-        where: "$idUsuario = ?",
-        whereArgs: [usuario.id]);
+  Future<UsuarioClasse> atualizarUsuario(UsuarioClasse usuario) async {
+    try {
+    Database dbUsuario = await banco;
+    print(usuario);
+     await dbUsuario.update(tblUsuario, usuario.toMap(),
+        where: "$idUsuario = ?", whereArgs: [usuario.id]);
+    return usuario;
+
+    } on Exception catch (e) {
+      print(e);
+      return null;
+    }
   }
 
-  Future<List> getAllUsuarios() async {
-    Database dbUsuario = await db;
+  Future<List> consultarTodosUsuarios() async {
+    Database dbUsuario = await banco;
     List listMap = await dbUsuario.rawQuery("SELECT * FROM $tblUsuario");
-    List<Usuario> listaUsuario = [];
-    for(Map m in listMap){
-      listaUsuario.add(Usuario.fromMap(m));
+    List<UsuarioClasse> listaUsuario = [];
+    for (Map m in listMap) {
+      listaUsuario.add(UsuarioClasse.fromMap(m));
     }
     return listaUsuario;
   }
 
-  Future<int> getNumber() async {
-    Database dbUsuario = await db;
-    return Sqflite.firstIntValue(await dbUsuario.rawQuery("SELECT COUNT(*) FROM $tblUsuario"));
+  Future<int> quantidadeUsuarios() async {
+    Database dbUsuario = await banco;
+    return Sqflite.firstIntValue(
+        await dbUsuario.rawQuery("SELECT COUNT(*) FROM $tblUsuario"));
   }
 
-  Future close() async {
-    Database dbUsuario = await db;
+  Future fecharBanco() async {
+    Database dbUsuario = await banco;
     dbUsuario.close();
+  }
+
+  Future<bool> loginUsuario(String user, String senha) async {
+    Database dbUsuario = await banco;
+    List<Map> retorno = await dbUsuario.query(tblUsuario,
+        where: "$userUsuario = ? AND $senhaUsuario = ?",
+        whereArgs: [user, senha]);
+    if (retorno.isNotEmpty) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
 }
 
-class Usuario {
-
+class UsuarioClasse {
   int id;
   String user;
   String senha;
 
-  Usuario();
+  UsuarioClasse();
 
-  Usuario.fromMap(Map map){
+  UsuarioClasse.fromMap(Map map) {
     id = map[idUsuario];
     user = map[userUsuario];
     senha = map[senhaUsuario];
@@ -111,7 +133,7 @@ class Usuario {
       userUsuario: user,
       senhaUsuario: senha,
     };
-    if(id != null){
+    if (id != null) {
       map[idUsuario] = id;
     }
     return map;
@@ -121,5 +143,4 @@ class Usuario {
   String toString() {
     return "Usuario(id: $id, user: $user, senha: $senha)";
   }
-
 }

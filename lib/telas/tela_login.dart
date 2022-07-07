@@ -1,18 +1,19 @@
 import 'dart:convert';
 import 'package:catalogo/banco/banco_local.dart';
+import 'package:catalogo/classes/settings_login.dart';
 import 'package:catalogo/componentes/custom_colors.dart';
 import 'package:catalogo/telas/tela_principal.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 var url = Uri.parse('https://webmc.com.br/ws/mobile/');
 //var url = Uri.parse('http://192.168.1.120:8009/ws/mobile/');
-
+SharedPreferences _sharedPreferences;
 
 class TelaLogin extends StatefulWidget {
-  final Usuario usuario;
+  final UsuarioClasse usuario;
 
   TelaLogin({this.usuario});
 
@@ -22,6 +23,8 @@ class TelaLogin extends StatefulWidget {
 
 class _TelaLoginState extends State<TelaLogin> {
 
+  SettingsLogin _settingsLogin = SettingsLogin();
+
   bool _isCheckedOffline = false;
   bool _isCheckedSalvarLogin = false;
   bool _showPassword = false;
@@ -29,37 +32,77 @@ class _TelaLoginState extends State<TelaLogin> {
 
   final _formKey = GlobalKey<FormState>();
 
-  TextEditingController _idController = TextEditingController();
+  TextEditingController _userController = TextEditingController();
   TextEditingController _senhaController = TextEditingController();
 
-  Usuario _saveUsuario;
+  UsuarioClasse _saveUsuario;
 
   UsuarioHelper helper = UsuarioHelper();
 
-  List<Usuario> usuario = [];
-
+  _carregaClass() async {
+    _saveUsuario = await helper.consultarUsuario(_userController.text);
+  }
 
   @override
   void initState() {
-    super.initState();
 
-    if(widget.usuario == null){
-      _saveUsuario = Usuario();
-    } else {
-      _saveUsuario = Usuario.fromMap(widget.usuario.toMap());
-      _idController.text = _saveUsuario.user;
-      _senhaController.text = _saveUsuario.senha;
+    _buscarCheckLogin();
+    _buscarCheckOffline();
+
+    super.initState();
+  }
+
+  _salvarCheckLogin(bool value) async{
+    setState(() {
+      _isCheckedSalvarLogin = value;
+    });
+    _settingsLogin.checkSalvarLogin = _isCheckedSalvarLogin;
+    await _settingsLogin.SalvarSettingsLogin();
+  }
+
+  _buscarCheckLogin() async {
+    await _settingsLogin.BuscarSettingsLogin();
+    if(_settingsLogin.checkOffline == null){
+      setState(() {
+        _isCheckedSalvarLogin = false;
+      });
+    }else{
+      setState(() {
+        _isCheckedSalvarLogin = _settingsLogin.checkSalvarLogin;
+      });
     }
   }
 
+  _salvarCheckOffline(bool value) async{
+    setState(() {
+      _isCheckedOffline = value;
+    });
+    _settingsLogin.checkOffline = _isCheckedOffline;
+    await _settingsLogin.SalvarSettingsLogin();
+  }
+
+  _buscarCheckOffline() async {
+    await _settingsLogin.BuscarSettingsLogin();
+    if(_settingsLogin.checkOffline == null){
+      setState(() {
+      _isCheckedOffline = false;
+      });
+    }else{
+      setState(() {
+        _isCheckedOffline = _settingsLogin.checkOffline;
+      });
+    }
+  }
 
   _login() async {
     Codec<String, String> stringToBase64 = utf8.fuse(base64);
     String senhabase64 = stringToBase64.encode(_senhaController.text);
 
     String funcao = "funcao=consulta_usuario" +
-        "&usuario=" + _idController.text +
-        "&senha=" + senhabase64;
+        "&usuario=" +
+        _userController.text +
+        "&senha=" +
+        senhabase64;
 
     final response = await http.post(url,
         headers: {
@@ -74,25 +117,23 @@ class _TelaLoginState extends State<TelaLogin> {
     if (resposta.contains("cn")) {
       //Util.savePreferences("user", editusuario.getText().toString(), TelaLogin.this);
       // Util.savePreferences("password", editSenha.getText().toString(), TelaLogin.this);
-      if(_isCheckedSalvarLogin = true){
-        _saveUsuario.user = _idController.text;
+      if (_isCheckedSalvarLogin == true) {
+        _saveUsuario.user = _userController.text;
         _saveUsuario.senha = _senhaController.text;
+        setState(() {
+          _usuarioNaoCadastrado = "";
+        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => TelaPrincipal()),
+        );
       }
-
-      setState(() {
-        _usuarioNaoCadastrado = "";
-      });
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => TelaPrincipal()),
-      );
     } else {
       setState(() {
         _usuarioNaoCadastrado = "Usuário não cadastrado!";
       });
-
     }
   }
-
 
   Color getColor(Set<MaterialState> states) {
     const Set<MaterialState> interactiveStates = <MaterialState>{
@@ -153,7 +194,7 @@ class _TelaLoginState extends State<TelaLogin> {
                     children: <Widget>[
                       TextFormField(
                         //Text usuário
-                        controller: _idController,
+                        controller: _userController,
                         style: TextStyle(color: Colors.white),
                         validator: (usuario) {
                           if (usuario.isEmpty) {
@@ -234,13 +275,11 @@ class _TelaLoginState extends State<TelaLogin> {
                 Row(
                   children: <Widget>[
                     Checkbox(
-                      value: this._isCheckedSalvarLogin,
+                      value: _isCheckedSalvarLogin,
                       checkColor: Colors.white,
                       fillColor: MaterialStateProperty.resolveWith(getColor),
                       onChanged: (bool value) {
-                        setState(() {
-                          this._isCheckedSalvarLogin = value;
-                        });
+                          _salvarCheckLogin(value);
                       },
                     ),
                     Text(
@@ -255,7 +294,7 @@ class _TelaLoginState extends State<TelaLogin> {
                       fillColor: MaterialStateProperty.resolveWith(getColor),
                       onChanged: (bool value) {
                         setState(() {
-                          this._isCheckedOffline = value;
+                          _salvarCheckOffline(value);
                         });
                       },
                     ),
@@ -295,5 +334,3 @@ class _TelaLoginState extends State<TelaLogin> {
     );
   }
 }
-
-

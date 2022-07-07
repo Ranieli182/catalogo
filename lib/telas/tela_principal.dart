@@ -18,10 +18,10 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
 
     Future<List<GetClientes>> fetchJSONData() async {
       Codec<String, String> stringToBase64 = utf8.fuse(base64);
-      String senhabase64 = stringToBase64.encode(Usuario().senha);
+      String senhabase64 = stringToBase64.encode(UsuarioClasse().senha);
 
       String funcao = "funcao=consulta_clientes" +
-          "&usuario=" + Usuario().user+
+          "&usuario=" + UsuarioClasse().user+
           "&senha=" + senhabase64;
 
       final response = await http.post(url,

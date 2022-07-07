@@ -22,18 +22,4 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Container CorPrincipal(){
-  return Container(
-    decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.blue,
-            Colors.white,
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        )),
-  );
-}
-
 //static const PrimaryLightColor = Color(0xFFF1E6FF);
