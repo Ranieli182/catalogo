@@ -10,7 +10,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 var url = Uri.parse('https://webmc.com.br/ws/mobile/');
 //var url = Uri.parse('http://192.168.1.120:8009/ws/mobile/');
-SharedPreferences _sharedPreferences;
 
 class TelaLogin extends StatefulWidget {
   final UsuarioClasse usuario;
@@ -38,10 +37,6 @@ class _TelaLoginState extends State<TelaLogin> {
   UsuarioClasse _saveUsuario;
 
   UsuarioHelper helper = UsuarioHelper();
-
-  _carregaClass() async {
-    _saveUsuario = await helper.consultarUsuario(_userController.text);
-  }
 
   @override
   void initState() {
@@ -120,6 +115,14 @@ class _TelaLoginState extends State<TelaLogin> {
     }
   }
 
+  _salvarUsuarioBanco(){
+    if(helper.consultarUsuario(_userController.text) == false){
+      _saveUsuario.user = _userController.text;
+      _saveUsuario.senha = _senhaController.text;
+      helper.salvarUsuario(_saveUsuario);
+    }
+  }
+
   _login() async {
     Codec<String, String> stringToBase64 = utf8.fuse(base64);
     String senhabase64 = stringToBase64.encode(_senhaController.text);
@@ -141,6 +144,7 @@ class _TelaLoginState extends State<TelaLogin> {
     resposta = response.body.toString();
 
     if (resposta.contains("cn")) {
+      _salvarUsuarioBanco();
       //Util.savePreferences("user", editusuario.getText().toString(), TelaLogin.this);
       // Util.savePreferences("password", editSenha.getText().toString(), TelaLogin.this);
       if (_settingsLogin.checkSalvarLogin == true) {
