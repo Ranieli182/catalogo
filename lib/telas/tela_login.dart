@@ -48,6 +48,7 @@ class _TelaLoginState extends State<TelaLogin> {
 
     _buscarCheckLogin();
     _buscarCheckOffline();
+    _bucarDadosLogin();
 
     super.initState();
   }
@@ -92,6 +93,20 @@ class _TelaLoginState extends State<TelaLogin> {
         _isCheckedOffline = _settingsLogin.checkOffline;
       });
     }
+  }
+
+  _bucarDadosLogin() async {
+    await _settingsLogin.BuscarSettingsLogin();
+    if(_settingsLogin.checkSalvarLogin == true){
+      if(_settingsLogin.usuario == null){
+        _userController.text = '';
+      }
+      else if (_settingsLogin.senha == null){
+        _senhaController.text = '';
+      }
+
+    }
+
   }
 
   _login() async {
