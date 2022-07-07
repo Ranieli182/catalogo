@@ -30,16 +30,17 @@ class SettingsLogin{
     _checkOffline = value;
   }
 
+
   Future<void> SalvarSettingsLogin() async {
     await sharedPreferencesSettings.getInstance();
-
-    sharedPreferencesSettings.preferences.setString('_userController', _usuario);
-
-    sharedPreferencesSettings.preferences.setString('_senhaController', _senha);
 
     sharedPreferencesSettings.preferences.setBool('_isCheckedSalvarLogin', _checkSalvarLogin);
 
     sharedPreferencesSettings.preferences.setBool('_isCheckedOffline', _checkOffline);
+
+    sharedPreferencesSettings.preferences.setString('_userController', _usuario);
+
+    sharedPreferencesSettings.preferences.setString('_senhaController', _senha);
 
   }
 

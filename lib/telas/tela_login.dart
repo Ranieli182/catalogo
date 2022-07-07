@@ -97,16 +97,27 @@ class _TelaLoginState extends State<TelaLogin> {
 
   _bucarDadosLogin() async {
     await _settingsLogin.BuscarSettingsLogin();
-    if(_settingsLogin.checkSalvarLogin == true){
+    if(_isCheckedSalvarLogin == true){
       if(_settingsLogin.usuario == null){
+        setState(() {
         _userController.text = '';
+        });
       }
-      else if (_settingsLogin.senha == null){
+      else{
+        setState(() {
+          _userController.text = _settingsLogin.usuario;
+        });
+      }
+      if (_settingsLogin.senha == null){
+        setState(() {
         _senhaController.text = '';
+        });
+      }else{
+        setState(() {
+          _senhaController.text = _settingsLogin.senha;
+        });
       }
-
     }
-
   }
 
   _login() async {
@@ -132,9 +143,12 @@ class _TelaLoginState extends State<TelaLogin> {
     if (resposta.contains("cn")) {
       //Util.savePreferences("user", editusuario.getText().toString(), TelaLogin.this);
       // Util.savePreferences("password", editSenha.getText().toString(), TelaLogin.this);
-      if (_isCheckedSalvarLogin == true) {
-        _saveUsuario.user = _userController.text;
-        _saveUsuario.senha = _senhaController.text;
+      if (_settingsLogin.checkSalvarLogin == true) {
+
+        _settingsLogin.usuario = _userController.text;
+        _settingsLogin.senha = _senhaController.text;
+        await _settingsLogin.SalvarSettingsLogin();
+
         setState(() {
           _usuarioNaoCadastrado = "";
         });
@@ -142,8 +156,13 @@ class _TelaLoginState extends State<TelaLogin> {
           context,
           MaterialPageRoute(builder: (context) => TelaPrincipal()),
         );
+      } else{
+        _settingsLogin.usuario = '';
+        _settingsLogin.senha = '';
+        await _settingsLogin.SalvarSettingsLogin();
       }
-    } else {
+    } else{
+
       setState(() {
         _usuarioNaoCadastrado = "Usuário não cadastrado!";
       });
