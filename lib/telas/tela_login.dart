@@ -55,7 +55,7 @@ class _TelaLoginState extends State<TelaLogin> {
     _settingsLogin.checkSalvarLogin = _isCheckedSalvarLogin;
     await _settingsLogin.SalvarSettingsLogin();
   }
-
+  
   _buscarCheckLogin() async {
     await _settingsLogin.BuscarSettingsLogin();
     if(_settingsLogin.checkOffline == null){
