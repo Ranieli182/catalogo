@@ -22,4 +22,4 @@ class MyApp extends StatelessWidget {
   }
 }
 
-//static const PrimaryLightColor = Color(0xFFF1E6FF);
+

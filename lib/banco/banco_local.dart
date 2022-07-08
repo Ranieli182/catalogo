@@ -39,7 +39,7 @@ class UsuarioHelper {
   Future<UsuarioClasse> salvarUsuario(UsuarioClasse usuario) async {
     try {
       Database dbUsuario = await banco;
-      usuario.id = (await dbUsuario.insert(tblUsuario, usuario.toMap()));
+      usuario.id = (await dbUsuario?.insert(tblUsuario, usuario.toMap()));
       return usuario;
     } on Exception catch (e) {
       print(e);

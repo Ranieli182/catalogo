@@ -6,7 +6,6 @@ import 'package:catalogo/telas/tela_principal.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 var url = Uri.parse('https://webmc.com.br/ws/mobile/');
 //var url = Uri.parse('http://192.168.1.120:8009/ws/mobile/');
@@ -114,20 +113,6 @@ class _TelaLoginState extends State<TelaLogin> {
     }
   }
 
-  _salvarUsuarioBanco() {
-    if (widget.usuario == null) {
-      _saveUsuario = UsuarioClasse();
-    }
-    else {
-      if (helper.consultarUsuario(_userController.text) == false) {
-        _saveUsuario.user = _userController.text;
-        _saveUsuario.senha = _senhaController.text;
-        helper.salvarUsuario(_saveUsuario);
-      }
-    }
-  }
-
-
 _login() async {
   Codec<String, String> stringToBase64 = utf8.fuse(base64);
   String senhabase64 = stringToBase64.encode(_senhaController.text);
@@ -149,7 +134,6 @@ _login() async {
   resposta = response.body.toString();
 
   if (resposta.contains("cn")) {
-    _salvarUsuarioBanco();
     //Util.savePreferences("user", editusuario.getText().toString(), TelaLogin.this);
     // Util.savePreferences("password", editSenha.getText().toString(), TelaLogin.this);
     if (_settingsLogin.checkSalvarLogin == true) {
@@ -338,7 +322,7 @@ Widget build(BuildContext context) {
                     ),
                   ),
                   Checkbox(
-                    value: this._isCheckedOffline,
+                    value: _isCheckedOffline,
                     checkColor: Colors.white,
                     fillColor: MaterialStateProperty.resolveWith(getColor),
                     onChanged: (bool value) {
