@@ -1,4 +1,3 @@
-import 'package:catalogo/banco/banco_local.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -7,7 +6,7 @@ import 'package:flutter/cupertino.dart';
 var url = Uri.parse('https://webmc.com.br/ws/mobile/');
 
 class TelaPrincipal extends StatefulWidget {
-  const TelaPrincipal({Key key}) : super(key: key);
+  const TelaPrincipal({Key? key}) : super(key: key);
 
   @override
   State<TelaPrincipal> createState() => _TelaPrincipalState();
@@ -18,10 +17,10 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
 
     Future<List<GetClientes>> fetchJSONData() async {
       Codec<String, String> stringToBase64 = utf8.fuse(base64);
-      String senhabase64 = stringToBase64.encode(UsuarioClasse().senha);
+      String senhabase64 = stringToBase64.encode('');
 
       String funcao = "funcao=consulta_clientes" +
-          "&usuario=" + UsuarioClasse().user+
+          "&usuario=" + ''+
           "&senha=" + senhabase64;
 
       final response = await http.post(url,
@@ -61,17 +60,17 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
             return Center(child: CircularProgressIndicator());
 
           return ListView(
-            children: snapshot.data
+            children: snapshot.data!
                 .map(
                   (cliente) => ListTile(
-                    title: Text(cliente.nome),
+                    title: Text(cliente.nome!),
                     onTap: () {
                       print(cliente.nome);
                     },
-                    subtitle: Text(cliente.telefone),
+                    subtitle: Text(cliente.telefone!),
                     leading: CircleAvatar(
                       backgroundColor: Colors.green,
-                      child: Text(cliente.nome[0],
+                      child: Text(cliente.nome![0],
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 20.0,
@@ -88,11 +87,11 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
 }
 
 class GetClientes {
-  int id;
-  String nome;
-  String telefone;
+  int? id;
+  String? nome;
+  String? telefone;
 
-  GetClientes({this.id, this.nome, this.telefone});
+  GetClientes({required this.id, required this.nome, required this.telefone});
 
   factory GetClientes.fromJson(Map<String, dynamic> json) {
     return GetClientes(

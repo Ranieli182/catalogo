@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'package:catalogo/banco/banco_local.dart';
 import 'package:catalogo/classes/settings_login.dart';
 import 'package:catalogo/componentes/custom_colors.dart';
+import 'package:catalogo/schemas/usuario.dart';
+import 'package:catalogo/services/usuario_services.dart';
 import 'package:catalogo/telas/tela_principal.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +12,7 @@ var url = Uri.parse('https://webmc.com.br/ws/mobile/');
 //var url = Uri.parse('http://192.168.1.120:8009/ws/mobile/');
 
 class TelaLogin extends StatefulWidget {
-  final UsuarioClasse usuario;
-
-  TelaLogin({this.usuario});
+  TelaLogin();
 
   @override
   State<TelaLogin> createState() => _TelaLoginState();
@@ -22,20 +21,19 @@ class TelaLogin extends StatefulWidget {
 class _TelaLoginState extends State<TelaLogin> {
 
   SettingsLogin _settingsLogin = SettingsLogin();
+  UsuarioService _usuarioService = UsuarioService();
 
-  bool _isCheckedOffline = false;
-  bool _isCheckedSalvarLogin = false;
-  bool _showPassword = false;
-  String _usuarioNaoCadastrado = '';
+
+  bool? _isCheckedOffline = false;
+  bool? _isCheckedSalvarLogin = false;
+  bool? _showPassword = false;
+  String? _usuarioNaoCadastrado = '';
 
   final _formKey = GlobalKey<FormState>();
 
   TextEditingController _userController = TextEditingController();
   TextEditingController _senhaController = TextEditingController();
 
-  UsuarioClasse _saveUsuario;
-
-  UsuarioHelper helper = UsuarioHelper();
 
   @override
   void initState() {
@@ -50,13 +48,13 @@ class _TelaLoginState extends State<TelaLogin> {
     setState(() {
       _isCheckedSalvarLogin = value;
     });
-    _settingsLogin.checkSalvarLogin = _isCheckedSalvarLogin;
+    _settingsLogin.checkSalvarLogin = _isCheckedSalvarLogin!;
     await _settingsLogin.SalvarSettingsLogin();
   }
 
   _buscarCheckLogin() async {
     await _settingsLogin.BuscarSettingsLogin();
-    if (_settingsLogin.checkOffline == null) {
+    if (_settingsLogin.checkOffline) {
       setState(() {
         _isCheckedSalvarLogin = false;
       });
@@ -71,13 +69,13 @@ class _TelaLoginState extends State<TelaLogin> {
     setState(() {
       _isCheckedOffline = value;
     });
-    _settingsLogin.checkOffline = _isCheckedOffline;
+    _settingsLogin.checkOffline = _isCheckedOffline!;
     await _settingsLogin.SalvarSettingsLogin();
   }
 
   _buscarCheckOffline() async {
     await _settingsLogin.BuscarSettingsLogin();
-    if (_settingsLogin.checkOffline == null) {
+    if (_settingsLogin.checkOffline) {
       setState(() {
         _isCheckedOffline = false;
       });
@@ -134,8 +132,13 @@ _login() async {
   resposta = response.body.toString();
 
   if (resposta.contains("cn")) {
-    //Util.savePreferences("user", editusuario.getText().toString(), TelaLogin.this);
-    // Util.savePreferences("password", editSenha.getText().toString(), TelaLogin.this);
+    if (_usuarioService.getUsuario(_userController.text).isNotEmpty){
+      print('achei o vivente');
+    } else {
+      print("cadastrei o vivente");
+      _usuarioService.addUsuario(_userController.text, _senhaController.text);
+    }
+
     if (_settingsLogin.checkSalvarLogin == true) {
       _settingsLogin.usuario = _userController.text;
       _settingsLogin.senha = _senhaController.text;
@@ -230,7 +233,7 @@ Widget build(BuildContext context) {
                       controller: _userController,
                       style: TextStyle(color: Colors.white),
                       validator: (usuario) {
-                        if (usuario.isEmpty) {
+                        if (usuario!.isEmpty) {
                           return "Digite seu Usuário";
                         } else {
                           return null;
@@ -262,7 +265,7 @@ Widget build(BuildContext context) {
                       controller: _senhaController,
                       style: TextStyle(color: Colors.white),
                       validator: (senha) {
-                        if (senha.isEmpty) {
+                        if (senha!.isEmpty) {
                           return "Digite sua Senha";
                         } else {
                           return null;
@@ -284,7 +287,7 @@ Widget build(BuildContext context) {
                           ),
                           onTap: () {
                             setState(() {
-                              _showPassword = !_showPassword;
+                              _showPassword = !_showPassword!;
                             });
                           },
                         ),
@@ -308,11 +311,11 @@ Widget build(BuildContext context) {
               Row(
                 children: <Widget>[
                   Checkbox(
-                    value: _isCheckedSalvarLogin,
+                    value: _isCheckedSalvarLogin!,
                     checkColor: Colors.white,
                     fillColor: MaterialStateProperty.resolveWith(getColor),
-                    onChanged: (bool value) {
-                      _salvarCheckLogin(value);
+                    onChanged: (bool? value) {
+                      _salvarCheckLogin(value!);
                     },
                   ),
                   Text(
@@ -322,12 +325,12 @@ Widget build(BuildContext context) {
                     ),
                   ),
                   Checkbox(
-                    value: _isCheckedOffline,
+                    value: _isCheckedOffline!,
                     checkColor: Colors.white,
                     fillColor: MaterialStateProperty.resolveWith(getColor),
-                    onChanged: (bool value) {
+                    onChanged: (bool? value) {
                       setState(() {
-                        _salvarCheckOffline(value);
+                        _salvarCheckOffline(value!);
                       });
                     },
                   ),
@@ -341,7 +344,7 @@ Widget build(BuildContext context) {
               ),
               RaisedButton(
                 onPressed: () {
-                  if (_formKey.currentState.validate()) {
+                  if (_formKey.currentState!.validate()) {
                     _login();
                   }
                 },
@@ -355,7 +358,7 @@ Widget build(BuildContext context) {
               ),
               Padding(padding: EdgeInsets.only(bottom: 10)),
               Text(
-                _usuarioNaoCadastrado,
+                _usuarioNaoCadastrado!,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.red, fontSize: 15.0),
               ),

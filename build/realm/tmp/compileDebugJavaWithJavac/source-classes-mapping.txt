@@ -1,0 +1,4 @@
+io/realm/BuildConfig.java
+ io.realm.BuildConfig
+io/realm/RealmPlugin.java
+ io.realm.RealmPlugin
